@@ -32,6 +32,7 @@ public class Main {
                     writeDataToDB();
                     break;
                 case 2:
+                    fetchDataFromDB();
                     break;
                 case 3:
                     break;
@@ -60,7 +61,8 @@ public class Main {
         conn = DriverManager.getConnection(DBurl, user, pass);
 
         //Bygga upp vår SQL Prepared Statement
-        ps = conn.prepareStatement("INSERT INTO books(books_title, books_author, books_price) VALUES (?, ?, ?)");
+        //ps = conn.prepareStatement("INSERT INTO books(books_title, books_author, books_price) VALUES (?, ?, ?)");
+        ps = conn.prepareStatement("CALL addNewBook(?, ?, ?)");
 
         //Använd SetString för att byta ut ? placeholder
         ps.setString(1, bookTitle);
@@ -74,6 +76,39 @@ public class Main {
         conn.close();
 
         System.out.println("Insert Successful. Press enter to continue...");
+        scan.nextLine();
+    }
+
+    static void fetchDataFromDB() throws SQLException {
+        //Initiera objekt
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        //Establera koppling till DB
+        conn = DriverManager.getConnection(DBurl, user, pass);
+
+        //Bygga upp vår SQL Prepared Statement
+        //ps = conn.prepareStatement("SELECT * FROM books;");
+        ps = conn.prepareStatement("CALL getAllBooks();");
+
+        //ExecuteUpdate för att skicka SQL commando till Databas
+        rs = ps.executeQuery();
+
+        System.out.println("-----");
+        //WhileLoop för att gå igenom de hämtade raderna
+        while (rs.next()) {
+            //Använder av rs.getString("<namnet på kolumn>")
+            System.out.println("Bookens titel: " + rs.getString("books_title"));
+            System.out.println("Bookens författare: " + rs.getString("books_author"));
+            System.out.println("Bookens pris: " + rs.getString("books_price"));
+            System.out.println("-----");
+        }
+
+        //Stänga kopplingen
+        conn.close();
+
+        System.out.println("Fetch Successful. Press enter to continue...");
         scan.nextLine();
     }
 }
